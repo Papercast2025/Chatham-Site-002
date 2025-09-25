@@ -23,39 +23,6 @@
       flex-direction: column;
       gap: 14px;
     }
-
-    /* Header bar with logo */
-    #header {
-      display: flex;
-      align-items: center;
-      justify-content: center; /* center the title block */
-      gap: 18px;
-      background-color: black;
-      color: white;
-      padding: 16px 20px;
-    }
-    #header .header-logo {
-      position: absolute;        /* pin the logo to the left while keeping title centered */
-      left: 20px;
-      top: 12px;
-      height: 64px;              /* tweak as desired */
-      width: auto;
-      background: white;         /* give the colored logo a white tile */
-      border-radius: 8px;
-      padding: 6px 8px;
-    }
-    #header .header-title {
-      text-align: center;
-      font-size: 40px;
-      font-weight: bold;
-      line-height: 1.15;
-    }
-    #header .header-sub {
-      font-size: 22px;
-      font-weight: normal;
-    }
-    #header a { color: white; text-decoration: underline; }
-
     /* Utility class for row layout */
     .row {
       flex-direction: row !important;
@@ -88,7 +55,6 @@
       font-size: 20px;
       color: #444;
     }
-
     /* Card frame */
     .section {
       border: 4px solid #000;
@@ -146,10 +112,8 @@
       margin-top: 8px;
       text-align: right;
     }
-
     /* Hide old river measurement element */
     #river-stage { display: none; }
-
     /* River graph container */
     #river-graph {
       background-color: #cccccc;
@@ -159,7 +123,6 @@
       width: 1080px;
       padding-left: calc(5% - 4px);
     }
-
     /* USGS site info: full black */
     #usgs-site-info {
       width: 100%;
@@ -168,7 +131,6 @@
       color: #000;
       margin-top: 2px;
     }
-
     /* Flood status styling */
     #flood-status {
       font-weight: bold;
@@ -177,6 +139,40 @@
       display: inline-block;
       text-align: center;
     }
+
+    /* ===== Header with logo ===== */
+    #header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      background-color: black;
+      color: white;
+      padding: 16px 20px;
+      text-align: center;
+      font-size: 43px;
+      font-weight: bold;
+      position: relative;
+    }
+    #header .header-logo {
+      position: absolute;
+      left: 20px;
+      top: 12px;
+      height: 64px;   /* tweak as needed */
+      width: auto;
+      background: white;
+      border-radius: 8px;
+      padding: 6px 8px; /* simple white “badge” behind logo */
+    }
+    #header .header-title {
+      text-align: center;
+      line-height: 1.15;
+    }
+    #header .header-sub {
+      font-size: 22px;
+      font-weight: normal;
+    }
+    #header a { color: white; text-decoration: underline; }
 
     /* Weather Conditions: two-column layout */
     #weather-section .section-content {
@@ -195,7 +191,6 @@
     #weather-temp-C { font-size: 50px; font-weight: bold; }
     #weather-details { text-align: right; }
     #weather-details div { font-size: 30px; font-weight: bold; }
-
     /* Sunrise/Sunset container */
     #sunrise-sunset {
       display: inline-block;
@@ -205,13 +200,11 @@
       font-weight: bold;
       color: #000;
     }
-
     /* Alerts text */
     #alert-message {
       font-weight: bold;
       white-space: pre-wrap;
     }
-
     /* AQI Section – children inline */
     #aqi-classification, #aqi-measurement {
       font-size: 38px;
@@ -219,7 +212,6 @@
       color: black;
       margin-top: 0;
     }
-
     /* Hydration message */
     #hydration-message {
       font-size: 32px;
@@ -227,14 +219,12 @@
       margin-top: 10px;
       color: #000;
     }
-
     /* Water Bottle icon */
     #water-bottle {
       display: inline-block;
       vertical-align: middle;
       margin-right: 5px;
     }
-
     /* Paddle advisory line */
     #paddle-advisory {
       text-align: center;
@@ -248,7 +238,10 @@
 <body>
   <!-- Header -->
   <div id="header">
-    <img class="header-logo" src="logo.jpg" alt="Chatham County logo" />
+    <img class="header-logo"
+         src="./catham-logo.jpg"
+         alt="Chatham County logo"
+         onerror="this.remove();" />
     <div class="header-title">
       US 64 Haw River Access, 348 River Access Rd
       <div class="header-sub">(<span id="header-lat">35.730995</span> / <span id="header-lon">-79.107109</span>)</div>
@@ -316,7 +309,7 @@
       <div class="card-timestamp" id="river-timestamp">Last updated: --</div>
     </div>
 
-    <!-- Current Forecast (above AQI) -->
+    <!-- Current Forecast (exactly two lines) -->
     <div class="section centered" id="rainfall-forecast">
       <div class="card-title">Current Forecast</div>
       <div class="section-content">
@@ -356,10 +349,12 @@
 
   <script>
     /* ============== GLOBALS ============== */
+    // IMPORTANT: Coordinates fixed for the US 64 site (match header)
     let LAT = 35.730995;
     let LON = -79.107109;
     document.getElementById('header-lat').textContent = LAT;
     document.getElementById('header-lon').textContent = LON;
+
     const AIRNOW_API_KEY = '26158E56-5836-46D3-B819-92969016332B';
     let floodThreshold = 5.0;
 
@@ -373,9 +368,7 @@
     const fmtTime = (d) =>
       new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: 'numeric', timeZone: TIME_ZONE }).format(d);
 
-    /* ======= CFS→Paddling classification (tunable) =======
-       Adjust these thresholds to match local guidance.
-       Categories are evaluated in order; flood stage always closes access. */
+    /* ======= CFS→Paddling classification (tunable) ======= */
     const FLOW_CLASS_THRESHOLDS = {
       too_low_max: 200,   // <200 cfs → too low
       novice_max: 700,    // 200–700 → beginner/novice
@@ -396,7 +389,7 @@
 
     function updateAllTimestamps() {
       const nowStr = fmtDateTime();
-      const ids = ['heat-risk-timestamp','alerts-timestamp','weather-timestamp','rainfall-timestamp','aqi-timestamp','swim-timestamp','river-timestamp'];
+      const ids = ['heat-risk-timestamp','alerts-timestamp','weather-timestamp','rainfall-timestamp','aqi-timestamp','swim-timestamp'];
       ids.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.textContent = "Last updated: " + nowStr;
@@ -564,9 +557,9 @@
       return svg;
     }
 
-    /* ============== HEAT RISK (simplified banner) ============== */
+    /* ============== HEAT RISK ============== */
     function generateGauge(value, min, max, label, color, hideLabel = false, scale = 3.0) {
-      return `<svg></svg>`; // placeholder; visual banner used instead
+      return `<svg>...</svg>`;
     }
     function updateHeatRisk(tempF, RH) {
       const elem = document.getElementById('heat-risk-level');
@@ -640,6 +633,7 @@
     // Fallback source that supports CORS in the browser
     async function fetchAQIFromOpenMeteo() {
       const url = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${LAT}&longitude=${LON}&hourly=us_aqi,pm2_5,pm10,ozone&timezone=auto&_=${Date.now()}`;
+
       const res = await fetch(url, { cache: "no-store" });
       if (!res.ok) throw new Error(`Open-Meteo HTTP ${res.status}`);
       const data = await res.json();
@@ -793,6 +787,7 @@
         .then(pointData => {
           const obsUrl = pointData.properties.forecastHourly;
           const gridUrl = pointData.properties.forecast;
+          const alertZone = pointData.properties.forecastZone;
 
           fetch(obsUrl)
             .then(res => res.json())
@@ -832,33 +827,36 @@
             })
             .catch(err => console.error('Weather observations error:', err));
 
-          // Only TWO forecast lines
           fetch(gridUrl)
             .then(res => res.json())
             .then(gridData => {
-              const [d1, d2] = gridData?.properties?.periods || [];
-              document.getElementById('rainfall-forecast-1').textContent =
-                `${d1?.name || 'Day 1'}: ${d1?.shortForecast || 'N/A'}`;
-              document.getElementById('rainfall-forecast-2').textContent =
-                `${d2?.name || 'Day 2'}: ${d2?.shortForecast || 'N/A'}`;
-              setTimeout(fitCardsToViewport, 0);
+              if (gridData.properties?.periods) {
+                const days = gridData.properties.periods.slice(0, 2); // exactly two
+                const el1 = document.getElementById('rainfall-forecast-1');
+                const el2 = document.getElementById('rainfall-forecast-2');
+                if (el1) el1.textContent = `${days[0]?.name || 'Day 1'}: ${days[0]?.shortForecast || 'N/A'}`;
+                if (el2) el2.textContent = `${days[1]?.name || 'Day 2'}: ${days[1]?.shortForecast || 'N/A'}`;
+                setTimeout(fitCardsToViewport, 0);
+              }
             })
             .catch(err => console.error('Rainfall forecast error:', err));
 
-          // Alerts: point-based (more reliable) + cache-busting
-          const alertUrl = `https://api.weather.gov/alerts/active?point=${LAT},${LON}&_=${Date.now()}`;
-          fetch(alertUrl, { cache: 'no-store' })
-            .then(res => res.json())
-            .then(alertData => {
-              const msg = (alertData.features || [])
-                .map(a => a.properties && a.properties.headline)
-                .filter(Boolean)
-                .join('\n');
-              document.getElementById('alert-message').textContent =
-                msg || 'No alerts at this time / Sin alertas en este momento';
-              setTimeout(fitCardsToViewport, 0);
-            })
-            .catch(err => console.error('Alerts fetch error:', err));
+          if (alertZone) {
+            const zoneId = alertZone.split('/').pop();
+            const alertUrl = `https://api.weather.gov/alerts/active/zone/${zoneId}`;
+            fetch(alertUrl)
+              .then(res => res.json())
+              .then(alertData => {
+                if (alertData.features && alertData.features.length > 0) {
+                  const alertMsg = alertData.features.map(a => a.properties.headline).join('\n');
+                  document.getElementById('alert-message').textContent = alertMsg;
+                } else {
+                  document.getElementById('alert-message').textContent = 'No alerts at this time / Sin alertas en este momento';
+                }
+                setTimeout(fitCardsToViewport, 0);
+              })
+              .catch(err => console.error('Alerts fetch error:', err));
+          }
         })
         .catch(err => console.error('NWS points data error:', err));
     }
@@ -1244,9 +1242,27 @@
       setTimeout(fitCardsToViewport, 0);
     }
 
-    /* ============== CARD PRIORITIZATION / FITTER ============== */
+    /* ============== WARNING ICON ============== */
+    function getWarningIcon() {
+      const svgNS = "http://www.w3.org/2000/svg";
+      let svg = document.createElementNS(svgNS, "svg");
+      svg.setAttribute("width", "48");
+      svg.setAttribute("height", "48");
+      svg.setAttribute("viewBox", "0 0 64 64");
+      svg.innerHTML = `
+        <polygon points="32,2 2,62 62,62" fill="black"/>
+        <text x="32" y="42" font-size="36" text-anchor="middle" fill="white" font-family="Arial" dy=".3em">!</text>
+      `;
+      return svg.outerHTML;
+    }
+
+    /* ====== CARD PRIORITIZATION / FITTER ====== */
+
+    /* Fixed canvas size of the ePaper */
     const VIEWPORT_W = 1440;
     const VIEWPORT_H = 2560;
+
+    /* Edit this list to set priority (index 0 = highest = keep first) */
     const CARD_PRIORITY = [
       'alerts-section',
       'weather-section',
@@ -1256,8 +1272,11 @@
       'swim-us64',
       'heat-risk-section'
     ];
+
+    /* How many top cards are protected (never hidden) */
     const ALWAYS_KEEP_FIRST = 3;
 
+    /* --- helpers --- */
     function cardPriority(el) {
       const id = el.id || '';
       const idx = CARD_PRIORITY.indexOf(id);
@@ -1269,6 +1288,8 @@
              (parseFloat(cs.marginTop) || 0) +
              (parseFloat(cs.marginBottom) || 0);
     }
+
+    /* Hide lowest-priority cards until everything fits in 1440x2560 */
     function fitCardsToViewport() {
       const header = document.getElementById('header');
       const container = document.querySelector('.container');
@@ -1280,6 +1301,8 @@
       const gap = parseFloat(cs.rowGap || cs.gap) || 0;
 
       const cards = Array.from(container.querySelectorAll('.section'));
+
+      // Show everything first to measure true heights
       cards.forEach(c => { c.style.display = 'flex'; });
 
       function totalHeightIfVisible() {
@@ -1287,11 +1310,12 @@
         const visible = cards.filter(c => c.style.display !== 'none');
         visible.forEach((c, i) => {
           used += outerHeight(c);
-          if (i > 0) used += gap;
+          if (i > 0) used += gap; // account for flex column gap
         });
         return used;
       }
 
+      // Hide from the lowest priority upward until it fits
       while (totalHeightIfVisible() > VIEWPORT_H) {
         const candidates = cards
           .filter(c => c.style.display !== 'none')
@@ -1301,9 +1325,12 @@
         candidates[0].style.display = 'none';
       }
     }
+
     function fitNowAndLater() {
       [0, 80, 600, 1600].forEach(ms => setTimeout(fitCardsToViewport, ms));
     }
+
+    // Re-fit once fonts are loaded (Roboto changes metrics)
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(() => fitNowAndLater());
     }
@@ -1321,6 +1348,7 @@
       fetchAllData();
       fitNowAndLater();
     };
+
     setInterval(fetchAllData, 10 * 60 * 1000);
   </script>
 </body>
