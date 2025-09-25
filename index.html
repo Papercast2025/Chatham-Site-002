@@ -23,23 +23,25 @@
     -webkit-text-size-adjust:none;
   }
 
-  /* ===== Header with logo ===== */
+  /* ===== Header with centered title and left logo ===== */
   #header{
     background:#000; color:#fff;
-    display:flex; align-items:center; justify-content:space-between;
+    display:grid;
+    grid-template-columns:160px 1fr 160px; /* left logo / centered text / right spacer */
+    align-items:center;
     gap:16px;
     padding:14px 20px;
-    font-size:40px; font-weight:700;
   }
-  #header a{ color:#fff; text-decoration:underline; }
-  #header-left{ display:flex; align-items:center; gap:16px; }
+  #header-left{ display:flex; align-items:center; gap:12px; }
   #header-logo{
     width:140px; height:auto; display:block; object-fit:contain;
-    background:#fff; /* if your logo has transparency it will still pop */
-    padding:6px; border-radius:6px;
+    background:#fff; padding:6px; border-radius:6px;
   }
-  #header-title{ line-height:1.15; }
+  #header-center{ text-align:center; }
+  #header-title{ font-size:40px; font-weight:700; line-height:1.1; }
   #header-coords{ font-size:22px; font-weight:500; opacity:0.9; }
+  /* right spacer keeps the center truly centered vs the left logo */
+  #header-right-spacer{ width:152px; height:1px; }
 
   .container{
     padding:32px;
@@ -60,55 +62,56 @@
     background:#000; color:#fff;
     padding:4px 8px; margin-bottom:8px; text-align:left;
   }
-  .section-content{
-    display:flex; flex-direction:column;
-    align-items:flex-start; text-align:left; /* sensible default */
-    width:100%;
-  }
+  .section-content{ display:flex; flex-direction:column; width:100%; }
   .centered .section-content{ align-items:center; text-align:center; }
-
-  .value{ font-size:100px; font-weight:700; margin:10px 0; }
   .label{ font-size:32px; color:var(--muted); }
   .card-timestamp{ font-size:24px; color:#222; margin-top:8px; text-align:right; }
 
-  /* ===== Alerts ===== */
-  #alerts-section .section-content{ align-items:center; }
-  #alert-message{ font-weight:bold; white-space:pre-wrap; text-align:center; width:100%; }
-
   /* ===== Park status ===== */
-  #park-status .section-content{
-    flex-direction:row; justify-content:space-between; align-items:center; gap:18px;
-  }
+  #park-status .section-content{ gap:10px; }
   #park-pill{
+    width:100%;
     background:#000; color:#fff;
     border-radius:10px;
     padding:18px 24px;
     font-size:54px; font-weight:800; line-height:1.05;
     text-align:center;
-    min-width:520px; /* ~2× wider “icon” */
   }
-  #park-hours{ display:flex; flex-direction:column; gap:6px; align-items:flex-start; }
+  #park-hours{ display:flex; flex-direction:column; gap:4px; }
   #park-hours div{ font-size:30px; font-weight:600; color:#000; }
   #park-next small{ font-size:26px; font-weight:500; color:#222; }
 
+  /* ===== Alerts ===== */
+  #alerts-section .section-content{ align-items:center; }
+  #alert-message{ font-weight:bold; white-space:pre-wrap; text-align:center; width:100%; }
+
   /* ===== Weather ===== */
   #weather-section .section-content{
-    flex-direction:row; justify-content:space-between; align-items:flex-start; gap:20px;
+    flex-direction:row; align-items:flex-start; justify-content:space-between; gap:20px;
   }
-  #weather-left{ display:flex; align-items:center; gap:12px; }
+  /* Left 1/3: icon + temps */
+  #weather-left{
+    flex:0 0 33%;
+    display:flex; align-items:center; gap:12px;
+  }
   #weather-icon{ width:126px; height:126px; }
   #weather-temp-F{ font-size:100px; font-weight:700; line-height:0.95; }
   #weather-temp-C{ font-size:50px; font-weight:700; }
-  #weather-right{ display:flex; flex-direction:column; gap:4px; align-items:flex-start; text-align:left; }
-  .wx-line{ font-size:30px; font-weight:400; color:#000; } /* not bolded */
+
+  /* Right 2/3: two-column grid of details */
+  #weather-right{
+    flex:0 0 67%;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    column-gap:24px; row-gap:4px;
+    align-content:flex-start;
+  }
+  .wx-line{ font-size:30px; font-weight:400; color:#000; word-break:break-word; }
   #weather-source{
+    grid-column:1 / -1;  /* span both columns */
     margin-top:6px;
     font-size:20px; color:#444; font-weight:400; text-align:right;
-    width:100%;
   }
-
-  /* ===== Sunrise/Sunset block (no icon) ===== */
-  #sunrise-sunset{ display:none; } /* legacy container hidden */
 
   /* ===== AQI ===== */
   #aqi-content{ white-space:nowrap; text-align:center; width:100%; }
@@ -119,54 +122,45 @@
   #aqi-breakdown{ font-size:28px; color:#222; margin-top:2px; }
   #aqi-source{ font-size:20px; color:#444; font-weight:400; }
 
-  /* ===== Forecast card (center the two lines) ===== */
+  /* ===== Forecast (center lines) ===== */
   #rainfall-forecast .section-content{ align-items:center; text-align:center; }
 
-  /* ===== River & water levels ===== */
+  /* ===== River ===== */
   .river-header{
-    background:#000; color:#fff;
-    font-size:36px; font-weight:700; padding:10px 8px; text-align:left; margin-bottom:8px;
+    background:#000; color:#fff; font-size:36px; font-weight:700; padding:10px 8px; text-align:left; margin-bottom:8px;
   }
   #flood-status{
-    font-weight:700; font-size:48px; margin-top:8px; display:inline-block; text-align:center;
-    text-transform:uppercase;
+    font-weight:700; font-size:48px; margin-top:8px; display:inline-block; text-align:center; text-transform:uppercase;
   }
   #paddle-advisory{
     text-align:center; font-size:36px; font-weight:800; margin-top:10px; padding:6px 10px;
-    background:#000; color:#fff; /* always white on black to pop more */
+    background:#000; color:#fff;
   }
-  #river-graph{
-    background:#ccc; display:block; margin:12px auto 0 auto; position:relative; width:1080px;
-    padding-left:calc(5% - 4px);
-  }
-  #river-stats{
-    text-align:center; margin-top:12px; font-weight:800; /* bold Stage/Discharge cluster */
-  }
+  #river-graph{ background:#ccc; display:block; margin:12px auto 0 auto; position:relative; width:1080px; padding-left:calc(5% - 4px); }
+  #river-stats{ text-align:center; margin-top:12px; font-weight:800; } /* bold Stage/Discharge */
   #usgs-site-info{ width:100%; text-align:right; font-size:20px; color:#000; margin-top:2px; }
 
-  /* ===== Trend arrows text (already included in strings) ===== */
-
-  /* ===== Card prioritization / fitting ===== */
-  /* Fixed canvas size of the ePaper */
+  /* ===== Card fitting ===== */
   </style>
 </head>
 <body>
-  <!-- Header with logo -->
+  <!-- Header -->
   <div id="header">
     <div id="header-left">
       <img id="header-logo" src="catham-logo.jpg" alt="Chatham County logo">
-      <div id="header-title">
-        US 64 Haw River Access, 348 River Access Rd
-        <div id="header-coords">
-          (<span id="header-lat">35.730995</span> / <span id="header-lon">-79.107109</span>)
-        </div>
+    </div>
+    <div id="header-center">
+      <div id="header-title">US 64 Haw River Access, 348 River Access Rd</div>
+      <div id="header-coords">
+        (<span id="header-lat">35.730995</span> / <span id="header-lon">-79.107109</span>)
       </div>
     </div>
+    <div id="header-right-spacer" aria-hidden="true"></div>
   </div>
 
   <div class="container">
 
-    <!-- Park Status (new) -->
+    <!-- Park Status -->
     <div class="section" id="park-status">
       <div class="card-title">Park Status</div>
       <div class="section-content">
@@ -192,6 +186,7 @@
     <div class="section" id="weather-section">
       <div class="card-title">Current Weather Conditions</div>
       <div class="section-content">
+        <!-- Left: icon + temps -->
         <div id="weather-left">
           <div id="weather-icon" style="margin-right:10px;"></div>
           <div>
@@ -200,19 +195,29 @@
           </div>
         </div>
 
+        <!-- Right: two columns -->
         <div id="weather-right">
+          <!-- Column 1 -->
           <div id="wx-sunrise" class="wx-line">Sunrise: —</div>
+          <div id="weather-forecast" class="wx-line">—</div>
+
+          <!-- Column 2 -->
           <div id="wx-sunset"  class="wx-line">Sunset: —</div>
           <div id="wx-uv"      class="wx-line">UV Index (Open-Meteo): —</div>
 
-          <div id="weather-forecast" class="wx-line">—</div>
+          <!-- Next row (Column 1) -->
           <div id="weather-wind"     class="wx-line">Wind: —</div>
+          <!-- Next row (Column 2) -->
           <div id="weather-humidity" class="wx-line">Humidity: —%</div>
+
+          <!-- Next row -->
           <div id="weather-feelslike" class="wx-line">Feels like: —°F</div>
           <div id="weather-dewpoint"  class="wx-line">Dew point: —°F</div>
+
+          <!-- Source spans both columns, right-aligned -->
+          <div id="weather-source">Source: —</div>
         </div>
       </div>
-      <div id="weather-source">Source: —</div>
       <div class="card-timestamp" id="weather-timestamp">Last updated: --</div>
     </div>
 
@@ -221,13 +226,11 @@
       <div class="river-header">River Water Level & Flow</div>
       <div class="section-content" style="margin-top:12px; padding:0 16px; text-align:center; align-items:center;">
         <div class="label" id="flood-status"></div>
-        <!-- Paddling advisory banner ABOVE the graph -->
         <div id="paddle-advisory" class="label">—</div>
       </div>
 
       <div id="river-graph"></div>
 
-      <!-- Bolded stats below the graph -->
       <div id="river-stats" class="label">
         <span id="river-stage-line"></span> &nbsp;•&nbsp; <span id="river-flow-line"></span>
       </div>
@@ -236,7 +239,7 @@
       <div class="card-timestamp" id="river-timestamp">Last updated: --</div>
     </div>
 
-    <!-- Forecast (centered; two lines by choice) -->
+    <!-- Forecast -->
     <div class="section centered" id="rainfall-forecast">
       <div class="card-title">Forecast</div>
       <div class="section-content">
@@ -288,8 +291,7 @@
     const PARK_HOURS = {
       tz: TIME_ZONE,
       openHour: 8,   // 8 AM local
-      closeHour: 19, // 7 PM local (24h clock)
-      // Optional: override per-day here if needed later
+      closeHour: 19, // 7 PM local (24h)
     };
 
     let floodThreshold = 5.0;
@@ -300,32 +302,30 @@
     const fmtTime = (d) =>
       new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: 'numeric', timeZone: TIME_ZONE }).format(d);
 
-    /* ======= CFS→Paddling classification (tunable) ======= */
+    /* ======= CFS→Paddling classification ======= */
     const FLOW_CLASS_THRESHOLDS = {
-      too_low_max: 200,   // <200 cfs → too low
-      novice_max: 700,    // 200–700 → beginner/novice
-      expert_max: 1600,   // 701–1600 → expert paddlers
-      closed_min: 2500    // ≥2500 → ACCESS CLOSED (even if stage below flood)
+      too_low_max: 200,
+      novice_max: 700,
+      expert_max: 1600,
+      closed_min: 2500
     };
 
-    /* ============== UTILITIES ============== */
     function haversineMi(lat1, lon1, lat2, lon2){
-      const R = 3958.7613; // miles
-      const toRad = (x)=> x * Math.PI/180;
-      const dLat = toRad(lat2-lat1), dLon = toRad(lon2-lon1);
-      const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
-      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      const R = 3958.7613; const toRad = x=>x*Math.PI/180;
+      const dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1);
+      const a=Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+      return R*2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     }
 
     function updateAllTimestamps(){
       const nowStr = fmtDateTime();
       ['park-timestamp','alerts-timestamp','weather-timestamp','rainfall-timestamp','aqi-timestamp','swim-timestamp','river-timestamp'].forEach(id=>{
-        const el = document.getElementById(id);
-        if (el) el.textContent = "Last updated: " + nowStr;
+        const el=document.getElementById(id);
+        if(el) el.textContent = "Last updated: " + nowStr;
       });
     }
 
-    /* ============== SIMPLE ICONS ============== */
+    /* ===== Simple weather icon ===== */
     function getWeatherIcon(forecast){
       forecast = String(forecast||'').toLowerCase();
       let iconSVG = "";
@@ -365,13 +365,11 @@
       return iconSVG;
     }
 
-    /* ============== PARK STATUS ============== */
+    /* ===== Park status ===== */
     function computeParkStatus(){
-      const now = new Date();
-      const open = new Date(now);
-      open.setHours(PARK_HOURS.openHour, 0, 0, 0);
-      const close = new Date(now);
-      close.setHours(PARK_HOURS.closeHour, 0, 0, 0);
+      const now=new Date();
+      const open=new Date(now); open.setHours(PARK_HOURS.openHour,0,0,0);
+      const close=new Date(now); close.setHours(PARK_HOURS.closeHour,0,0,0);
 
       const isOpen = now >= open && now < close;
       const pill = document.getElementById('park-pill');
@@ -382,25 +380,20 @@
 
       // Next event + countdown
       let nextLabel, nextWhen;
-      if (isOpen){
-        nextLabel = "closes at " + fmtTime(close);
-        nextWhen = close;
-      } else {
-        // If before open → opens at open; if after close → opens next day
-        let opens = new Date(open);
-        if (now >= close) { opens.setDate(opens.getDate() + 1); }
-        nextLabel = "opens at " + fmtTime(opens);
+      if(isOpen){ nextLabel = "Park closes at " + fmtTime(close); nextWhen = close; }
+      else{
+        let opens=new Date(open);
+        if(now >= close) opens.setDate(opens.getDate()+1);
+        nextLabel = "Park opens at " + fmtTime(opens);
         nextWhen = opens;
       }
-      const ms = Math.max(0, nextWhen - now);
-      const mins = Math.round(ms / 60000);
-      const hrs = Math.floor(mins / 60);
-      const rem = mins % 60;
+      const ms=Math.max(0, nextWhen - now);
+      const mins = Math.round(ms/60000), hrs=Math.floor(mins/60), rem=mins%60;
       const inStr = (hrs>0 ? `${hrs}h ${rem}m` : `${mins} min`);
-      document.getElementById('park-next').innerHTML = `Next: Park ${nextLabel} <small>(in ${inStr})</small>`;
+      document.getElementById('park-next').innerHTML = `Next: ${nextLabel} <small>(in ${inStr})</small>`;
     }
 
-    /* ============== AQI ============== */
+    /* ===== AQI ===== */
     function aqiCategoryFromValue(n){
       if (n <= 50) return "Good";
       if (n <= 100) return "Moderate";
@@ -410,16 +403,16 @@
       return "Hazardous";
     }
     function aqiGuidanceForCategory(cat){
-      const c = String(cat||"").toLowerCase();
-      if (c==="good") return "Air quality is satisfactory; great for outdoor activities.";
-      if (c==="moderate") return "Okay for most; unusually sensitive people may shorten outdoor exertion.";
-      if (c.includes("sensitive")) return "Sensitive groups should reduce prolonged or heavy outdoor exertion.";
-      if (c==="unhealthy") return "Everyone may feel effects; sensitive groups should avoid prolonged exertion.";
-      if (c.includes("very")) return "Health alert: consider limiting outdoor activity; sensitive groups should avoid it.";
+      const c=String(cat||"").toLowerCase();
+      if(c==="good") return "Air quality is satisfactory; great for outdoor activities.";
+      if(c==="moderate") return "Okay for most; unusually sensitive people may shorten outdoor exertion.";
+      if(c.includes("sensitive")) return "Sensitive groups should reduce prolonged or heavy outdoor exertion.";
+      if(c==="unhealthy") return "Everyone may feel effects; sensitive groups should avoid prolonged exertion.";
+      if(c.includes("very")) return "Health alert: consider limiting outdoor activity; sensitive groups should avoid it.";
       return "Emergency conditions: everyone should avoid all outdoor exertion.";
     }
     function generateAirNowArcGauge(aqi){
-      const svgNS = "http://www.w3.org/2000/svg";
+      const svgNS="http://www.w3.org/2000/svg";
       const width=280, height=140, cx=width/2, cy=height, r=width/2, seg=36;
       const colors=["#e0e0e0","#cccccc","#b8b8b8","#a4a4a4","#909090"];
       const svg=document.createElementNS(svgNS,"svg");
@@ -444,15 +437,13 @@
       svg.appendChild(needle);
       return svg;
     }
-    function renderAQI(state, isCached=false){
+    function renderAQI(state,isCached=false){
       const content=document.getElementById("aqi-content"); content.innerHTML="";
       const L=document.createElement("div"); L.id="aqi-classification";
       const C=document.createElement("div"); C.id="aqi-gauge-container";
       const R=document.createElement("div"); R.id="aqi-measurement";
       if(!state){
-        L.textContent="DATA UNAVAILABLE";
-        C.appendChild(generateAirNowArcGauge(0));
-        R.textContent="AQI: —";
+        L.textContent="DATA UNAVAILABLE"; C.appendChild(generateAirNowArcGauge(0)); R.textContent="AQI: —";
         document.getElementById("aqi-guidance").textContent="—";
         document.getElementById("aqi-breakdown").textContent="—";
         document.getElementById("aqi-source").textContent="Source: —";
@@ -524,7 +515,7 @@
       }
     }
 
-    /* ============== WEATHER (NWS + UV from Open-Meteo) ============== */
+    /* ===== Weather (NWS + UV from Open-Meteo + Sunrise/Sunset) ===== */
     function parseWindMph(windStr){ const m=String(windStr||"").match(/[\d.]+/); return m?parseFloat(m[0]):0; }
     function fToC(f){ return (f-32)*5/9; } function cToF(c){ return (c*9/5)+32; }
     function dewPointF(tempF, rh){
@@ -566,7 +557,6 @@
             const sunsetLocal =new Date(data.results.sunset);
             document.getElementById('wx-sunrise').textContent = `Sunrise: ${fmtTime(sunriseLocal)}`;
             document.getElementById('wx-sunset').textContent  = `Sunset: ${fmtTime(sunsetLocal)}`;
-            setTimeout(fitCardsToViewport,0);
           }
         })
         .catch(err=>console.error("Sunrise/Sunset error:", err));
@@ -582,7 +572,7 @@
         const alertZone=pointData.properties.forecastZone;
         const stationsUrl=pointData.properties.observationStations;
 
-        // Current conditions (hourly forecast block)
+        // Current conditions (hourly grid "now")
         fetch(obsUrl).then(r=>r.json()).then(obsData=>{
           if(obsData.properties?.periods?.length>0){
             const now=obsData.properties.periods[0];
@@ -608,11 +598,10 @@
               document.getElementById('weather-feelslike').textContent = `Feels like: —`;
               document.getElementById('weather-dewpoint').textContent  = `Dew point: —`;
             }
-            setTimeout(fitCardsToViewport,0);
           }
         }).catch(e=>console.error("Weather obs error:", e));
 
-        // 2-line Forecast card
+        // Forecast (2 lines)
         fetch(gridUrl).then(r=>r.json()).then(grid=>{
           if(grid.properties?.periods){
             const days=grid.properties.periods.slice(0,2);
@@ -620,7 +609,6 @@
               `${days[0]?.name || 'Period 1'}: ${days[0]?.shortForecast || '—'}`;
             document.getElementById('rainfall-forecast-2').textContent =
               `${days[1]?.name || 'Period 2'}: ${days[1]?.shortForecast || '—'}`;
-            setTimeout(fitCardsToViewport,0);
           }
         }).catch(e=>console.error("Forecast error:", e));
 
@@ -633,7 +621,6 @@
               ? alertData.features.map(a=>a.properties.headline).join('\n')
               : 'No alerts at this time / Sin alertas en este momento';
             document.getElementById('alert-message').textContent = msg;
-            setTimeout(fitCardsToViewport,0);
           }).catch(e=>console.error("Alerts fetch error:", e));
         }
 
@@ -667,7 +654,7 @@
       }
     }
 
-    /* ============== TREND HELPERS (▲ / ▼ / →) ============== */
+    /* ===== River helpers ===== */
     function computeFlowTrend(flowValues){
       try{
         if(!Array.isArray(flowValues) || flowValues.length<2) return { arrow:'→', label:'steady' };
@@ -694,8 +681,6 @@
         return diff>0 ? {arrow:'▲',label:'rising'} : {arrow:'▼',label:'falling'};
       }catch{ return { arrow:'→', label:'steady' }; }
     }
-
-    /* ====== FLOW CLASSIFIER ====== */
     function classifyFlow(cfs, stage, floodStage){
       if (Number.isFinite(stage) && Number.isFinite(floodStage) && stage >= floodStage)
         return { label: "ACCESS CLOSED, STAY OFF THE RIVER!", severity: 3 };
@@ -708,7 +693,6 @@
       return { label:"EXPERT PADDLERS ONLY", severity:2 };
     }
 
-    /* ============== RIVER DATA (USGS) ============== */
     function groupBy3HourBlocks(stageArray){
       const blockMap={};
       stageArray.forEach(pt=>{
@@ -809,15 +793,14 @@
       const url=`https://waterservices.usgs.gov/nwis/iv/?format=json&sites=02096960&parameterCd=00065,00060&startDT=${iso(start)}&endDT=${iso(end)}&siteStatus=all`;
       fetch(url).then(r=>r.json()).then(data=>{
         const series=data?.value?.timeSeries||[];
-        const get=(code)=>series.find(s=> (s?.variable?.variableCode?.[0]?.value)===code );
+        const get=(code)=>series.find(s=>(s?.variable?.variableCode?.[0]?.value)===code);
         const stageSeries=get("00065"), flowSeries=get("00060");
 
-        // Flood stage from site properties if present
         const props=stageSeries?.sourceInfo?.siteProperty || flowSeries?.sourceInfo?.siteProperty;
         if(props) props.forEach(p=>{ if(p.propertyName==="floodStage"){ const n=parseFloat(p.value); if(Number.isFinite(n)) floodThreshold=n; } });
 
-        const stageValues=(stageSeries?.values?.[0]?.value || []).map(v=>({dateTime:v.dateTime, stage:parseFloat(v.value)})).filter(p=>Number.isFinite(p.stage));
-        const flowValues =(flowSeries ?.values?.[0]?.value || []).map(v=>({dateTime:v.dateTime, flow: parseFloat(v.value)})).filter(p=>Number.isFinite(p.flow));
+        const stageValues=(stageSeries?.values?.[0]?.value||[]).map(v=>({dateTime:v.dateTime, stage:parseFloat(v.value)})).filter(p=>Number.isFinite(p.stage));
+        const flowValues =(flowSeries ?.values?.[0]?.value||[]).map(v=>({dateTime:v.dateTime, flow :parseFloat(v.value)})).filter(p=>Number.isFinite(p.flow));
 
         const stageEl=document.getElementById('river-stage-line');
         const flowEl =document.getElementById('river-flow-line');
@@ -842,27 +825,18 @@
 
         document.getElementById("river-timestamp").textContent = "Last updated: " + fmtDateTime();
 
-        // Classification banner (always white on black)
         const classif=classifyFlow(lastFlow, lastStage, floodThreshold);
         padEl.textContent = classif.label;
         padEl.style.backgroundColor = "black";
         padEl.style.color = "white";
 
-        // Flood status with thumbs up when below
         const statusEl=document.getElementById("flood-status");
         if(lastStage >= floodThreshold){
           statusEl.innerHTML = "FLOOD LEVELS UNSAFE, ACCESS CLOSED";
-          statusEl.style.fontSize="48px";
-          statusEl.style.backgroundColor="#fff"; statusEl.style.color="#000";
-          statusEl.style.padding="0"; statusEl.style.margin="0 auto";
         }else{
           statusEl.innerHTML = "RIVER BELOW FLOOD STAGE&nbsp;👍";
-          statusEl.style.fontSize="48px";
-          statusEl.style.backgroundColor="#fff"; statusEl.style.color="#000";
-          statusEl.style.padding="0"; statusEl.style.margin="0 auto";
         }
 
-        // Graph (stage)
         const grouped=groupBy3HourBlocks(stageValues);
         renderRiverGraph(grouped, floodThreshold, lastStageStr);
       }).catch(err=>{
@@ -874,7 +848,7 @@
       });
     }
 
-    /* ====== CARD PRIORITIZATION / FITTER ====== */
+    /* ===== Fit to ePaper viewport ===== */
     const VIEWPORT_W=1440, VIEWPORT_H=2560;
     const CARD_PRIORITY=[
       'park-status',
@@ -903,7 +877,7 @@
     function fitNowAndLater(){ [0,80,600,1600].forEach(ms=>setTimeout(fitCardsToViewport,ms)); }
     if(document.fonts && document.fonts.ready){ document.fonts.ready.then(()=>fitNowAndLater()); }
 
-    /* ============== MASTER REFRESH ============== */
+    /* ===== MASTER REFRESH ===== */
     function fetchAllData(){
       updateAllTimestamps();
       computeParkStatus();
