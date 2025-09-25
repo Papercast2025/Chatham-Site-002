@@ -211,10 +211,11 @@
   </style>
 </head>
 <body>
-  <!-- Header -->
+  <!-- Header (filled from CONFIG on load) -->
   <div id="header">
-    US 15/501 Haw River Access (<span id="header-lat">35.77659</span> / <span id="header-lon">-79.14597</span>)
+    US 64 Haw River Access, 348 River Access Rd (<span id="header-lat">35.730995</span> / <span id="header-lon">-79.107109</span>)
   </div>
+
   <div class="container">
     <!-- Heat Risk Section -->
     <div class="section centered" id="heat-risk-section">
@@ -303,8 +304,8 @@
     </div>
 
     <!-- Swim Guide -->
-    <div class="section centered" id="swim-us64">
-      <div class="card-title">Swim Guide: US&nbsp;64 Access</div>
+    <div class="section centered" id="swim-card">
+      <div class="card-title" id="swim-title">Swim Guide</div>
       <div class="section-content">
         <div class="value" id="swim-status">✔ SAFE TO SWIM</div>
         <div class="label" id="swim-sampled">Sampled: June&nbsp;27,&nbsp;2025 at&nbsp;13:45</div>
@@ -314,13 +315,30 @@
     </div>
   </div>
 
-    
   <script>
+    /* ==================== ONE-PLACE CONFIG ==================== */
+    /*
+    // ALT CONFIG (US-15/501 Access)
+    const CONFIG = {
+      SITE_NAME: "US 15/501 Haw River Access",
+      LAT: 35.7765900,
+      LON: -79.1459700,
+      SWIM_TITLE: "Swim Guide: US 15/501 Access",
+      USGS_SITE: "02096960" // Haw River at Bynum
+    };
+    */
+    // DEFAULT CONFIG (US-64 – 348 River Access Rd)
+    const CONFIG = {
+      SITE_NAME: "US 64 Haw River Access, 348 River Access Rd",
+      LAT: 35.7309950,
+      LON: -79.1071090,
+      SWIM_TITLE: "Swim Guide: US 64 Access",
+      USGS_SITE: "02096960" // Haw River at Bynum
+    };
+
     /* ============== GLOBALS ============== */
-    let LAT = 35.77659;
-    let LON = -79.14597;
-    document.getElementById('header-lat').textContent = LAT;
-    document.getElementById('header-lon').textContent = LON;
+    let LAT = CONFIG.LAT;
+    let LON = CONFIG.LON;
     const AIRNOW_API_KEY = '26158E56-5836-46D3-B819-92969016332B';
     let floodThreshold = 5.0;
 
@@ -334,9 +352,7 @@
     const fmtTime = (d) =>
       new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: 'numeric', timeZone: TIME_ZONE }).format(d);
 
-    /* ======= CFS→Paddling classification (tunable) =======
-       Adjust these thresholds to match local guidance.
-       Categories are evaluated in order; flood stage always closes access. */
+    /* ======= CFS→Paddling classification (tunable) ======= */
     const FLOW_CLASS_THRESHOLDS = {
       too_low_max: 200,   // <200 cfs → too low
       novice_max: 700,    // 200–700 → beginner/novice
@@ -355,6 +371,18 @@
       "Keep a water bottle handy and sip often."
     ];
 
+    function applyConfigToUI() {
+      const headerEl = document.getElementById('header');
+      if (headerEl) {
+        headerEl.innerHTML = `${CONFIG.SITE_NAME} (<span id="header-lat">${CONFIG.LAT}</span> / <span id="header-lon">${CONFIG.LON}</span>)`;
+      }
+      const swimTitle = document.getElementById('swim-title');
+      if (swimTitle) swimTitle.textContent = CONFIG.SWIM_TITLE;
+
+      const usgsLabel = document.getElementById('usgs-site-info');
+      if (usgsLabel) usgsLabel.textContent = `USGS Site #${CONFIG.USGS_SITE}`;
+    }
+
     function updateAllTimestamps() {
       const nowStr = fmtDateTime();
       const ids = ['heat-risk-timestamp','alerts-timestamp','weather-timestamp','rainfall-timestamp','aqi-timestamp','swim-timestamp'];
@@ -362,8 +390,8 @@
         const el = document.getElementById(id);
         if (el) el.textContent = "Last updated: " + nowStr;
       });
-      document.getElementById("hydration-message").textContent =
-        hydrationMessages[Math.floor(Math.random() * hydrationMessages.length)];
+      const hm = document.getElementById("hydration-message");
+      if (hm) hm.textContent = hydrationMessages[Math.floor(Math.random() * hydrationMessages.length)];
     }
 
     /* ============== GET WEATHER ICON ============== */
@@ -800,12 +828,16 @@
             .then(gridData => {
               if (gridData.properties?.periods) {
                 const days = gridData.properties.periods.slice(0, 3);
-                document.getElementById('rainfall-forecast-1').textContent =
-                  `${days[0]?.name || 'Day1'}: ${days[0]?.shortForecast || 'N/A'}`;
-                document.getElementById('rainfall-forecast-2').textContent =
-                  `${days[1]?.name || 'Day2'}: ${days[1]?.shortForecast || 'N/A'}`;
-                document.getElementById('rainfall-forecast-3').textContent =
-                  `${days[2]?.name || 'Day3'}: ${days[2]?.shortForecast || 'N/A'}`;
+
+                // SAFE: only set elements that exist (your HTML shows 2 lines)
+                const rf1 = document.getElementById('rainfall-forecast-1');
+                const rf2 = document.getElementById('rainfall-forecast-2');
+                const rf3 = document.getElementById('rainfall-forecast-3'); // may not exist
+
+                if (rf1) rf1.textContent = `${days[0]?.name || 'Day1'}: ${days[0]?.shortForecast || 'N/A'}`;
+                if (rf2) rf2.textContent = `${days[1]?.name || 'Day2'}: ${days[1]?.shortForecast || 'N/A'}`;
+                if (rf3) rf3.textContent = `${days[2]?.name || 'Day3'}: ${days[2]?.shortForecast || 'N/A'}`;
+
                 setTimeout(fitCardsToViewport, 0);
               }
             })
@@ -860,7 +892,7 @@
     function computeStageTrend(stageValues) {
       try {
         if (!Array.isArray(stageValues) || stageValues.length < 2) {
-          return { arrow: '→', label: 'steady' };
+        return { arrow: '→', label: 'steady' };
         }
         const lastTime = new Date(stageValues[stageValues.length - 1].dateTime).getTime();
         const windowStart = lastTime - 3 * 3600 * 1000;
@@ -904,7 +936,6 @@
       if (cfs >= t.closed_min) {
         return { label: "UNSAFE RIVER FLOW - ACCESS CLOSED, STAY OFF THE RIVER!", severity: 3 };
       }
-      // If between expert_max and closed_min, treat as expert
       return { label: "EXPERT PADDLERS ONLY", severity: 2 };
     }
 
@@ -916,7 +947,7 @@
       const format = d => d.toISOString().split('.')[0];
 
       const url =
-        `https://waterservices.usgs.gov/nwis/iv/?format=json&sites=02096960` +
+        `https://waterservices.usgs.gov/nwis/iv/?format=json&sites=${CONFIG.USGS_SITE}` +
         `&parameterCd=00065,00060&startDT=${format(start)}&endDT=${format(end)}&siteStatus=all`;
 
       fetch(url)
@@ -1239,7 +1270,7 @@
       'rainfall-forecast',
       'river-section',
       'aqi-section',
-      'swim-us64',
+      'swim-card',
       'heat-risk-section'
     ];
 
@@ -1307,6 +1338,7 @@
 
     /* ============== MASTER REFRESH ============== */
     function fetchAllData() {
+      applyConfigToUI();
       updateAllTimestamps();
       fetchRiverData();
       fetchAQIData();
