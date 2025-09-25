@@ -40,7 +40,6 @@
   #header-center{ text-align:center; }
   #header-title{ font-size:40px; font-weight:700; line-height:1.1; }
   #header-coords{ font-size:22px; font-weight:500; opacity:0.9; }
-  /* right spacer keeps the center truly centered vs the left logo */
   #header-right-spacer{ width:152px; height:1px; }
 
   .container{
@@ -56,6 +55,7 @@
     padding:16px;
     display:flex; flex-direction:column;
     position:relative;
+    box-sizing:border-box;
   }
   .card-title{
     font-size:36px; font-weight:700;
@@ -70,16 +70,23 @@
   /* ===== Park status ===== */
   #park-status .section-content{ gap:10px; }
   #park-pill{
-    width:100%;
+    display:block;
+    width:100%; max-width:100%;
+    box-sizing:border-box;
     background:#000; color:#fff;
     border-radius:10px;
     padding:18px 24px;
     font-size:54px; font-weight:800; line-height:1.05;
     text-align:center;
+    overflow:hidden; text-overflow:ellipsis;
   }
-  #park-hours{ display:flex; flex-direction:column; gap:4px; }
-  #park-hours div{ font-size:30px; font-weight:600; color:#000; }
-  #park-next small{ font-size:26px; font-weight:500; color:#222; }
+  /* Today + Next on one line */
+  #park-hours-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    gap:20px; width:100%;
+  }
+  #park-hours-row div{ font-size:30px; font-weight:600; color:#000; white-space:nowrap; }
+  #park-hours-row small{ font-size:26px; font-weight:500; color:#222; }
 
   /* ===== Alerts ===== */
   #alerts-section .section-content{ align-items:center; }
@@ -105,12 +112,14 @@
     grid-template-columns:1fr 1fr;
     column-gap:24px; row-gap:4px;
     align-content:flex-start;
+    padding-right:10px; /* keeps trailing parenthesis off the edge */
+    box-sizing:border-box;
   }
   .wx-line{ font-size:30px; font-weight:400; color:#000; word-break:break-word; }
   #weather-source{
     grid-column:1 / -1;  /* span both columns */
     margin-top:6px;
-    font-size:20px; color:#444; font-weight:400; text-align:right;
+    font-size:20px; color:#444; font-weight:400; text-align:right; padding-right:2px;
   }
 
   /* ===== AQI ===== */
@@ -122,8 +131,9 @@
   #aqi-breakdown{ font-size:28px; color:#222; margin-top:2px; }
   #aqi-source{ font-size:20px; color:#444; font-weight:400; }
 
-  /* ===== Forecast (center lines) ===== */
+  /* ===== Forecast (center lines, bold text) ===== */
   #rainfall-forecast .section-content{ align-items:center; text-align:center; }
+  #rainfall-forecast .label{ font-weight:700; }
 
   /* ===== River ===== */
   .river-header{
@@ -133,14 +143,13 @@
     font-weight:700; font-size:48px; margin-top:8px; display:inline-block; text-align:center; text-transform:uppercase;
   }
   #paddle-advisory{
-    text-align:center; font-size:36px; font-weight:800; margin-top:10px; padding:6px 10px;
+    text-align:center; font-size:48px; font-weight:800; margin-top:10px; padding:8px 12px;
     background:#000; color:#fff;
   }
   #river-graph{ background:#ccc; display:block; margin:12px auto 0 auto; position:relative; width:1080px; padding-left:calc(5% - 4px); }
   #river-stats{ text-align:center; margin-top:12px; font-weight:800; } /* bold Stage/Discharge */
   #usgs-site-info{ width:100%; text-align:right; font-size:20px; color:#000; margin-top:2px; }
 
-  /* ===== Card fitting ===== */
   </style>
 </head>
 <body>
@@ -165,7 +174,7 @@
       <div class="card-title">Park Status</div>
       <div class="section-content">
         <div id="park-pill">—</div>
-        <div id="park-hours">
+        <div id="park-hours-row">
           <div id="park-today">Today: —</div>
           <div id="park-next">Next: — <small>(—)</small></div>
         </div>
@@ -411,6 +420,8 @@
       if(c.includes("very")) return "Health alert: consider limiting outdoor activity; sensitive groups should avoid it.";
       return "Emergency conditions: everyone should avoid all outdoor exertion.";
     }
+
+    /* Robust gauge: draw segment background + shaded sector up to AQI + needle */
     function generateAirNowArcGauge(aqi){
       const svgNS="http://www.w3.org/2000/svg";
       const width=280, height=140, cx=width/2, cy=height, r=width/2, seg=36;
@@ -418,6 +429,8 @@
       const svg=document.createElementNS(svgNS,"svg");
       svg.setAttribute("width",width); svg.setAttribute("height",height);
       svg.setAttribute("viewBox",`0 0 ${width} ${height}`);
+
+      // Background segments (light grays)
       for(let i=0;i<5;i++){
         const a0=(180 - i*seg)*Math.PI/180, a1=(180 - (i+1)*seg)*Math.PI/180;
         const x0=cx + r*Math.cos(a0), y0=cy - r*Math.sin(a0);
@@ -427,16 +440,39 @@
         p.setAttribute("fill",colors[i]); p.setAttribute("stroke","black"); p.setAttribute("stroke-width","8");
         svg.appendChild(p);
       }
-      const prop=Math.min(Math.max(aqi,0),300)/300;
-      const fillAngle=prop*180, angle=(180 - fillAngle)*Math.PI/180;
-      const x=cx + r*Math.cos(angle), y=cy - r*Math.sin(angle);
+
+      // Shaded sector from 180° to the AQI angle
+      const capped = Math.max(0, Math.min(300, Number(aqi)||0));
+      const fillAngle = capped/300 * 180;      // 0..180
+      const endDeg = 180 - fillAngle;          // 180 (left) down to 0 (right)
+
+      function sectorPath(cx,cy,r,degStart,degEnd){
+        const rad=(d)=>d*Math.PI/180;
+        const x0=cx + r*Math.cos(rad(degStart)), y0=cy - r*Math.sin(rad(degStart));
+        const x1=cx + r*Math.cos(rad(degEnd)),   y1=cy - r*Math.sin(rad(degEnd));
+        const largeArc = (Math.abs(degStart-degEnd) >= 180) ? 1 : 0;
+        const sweep = 1; // clockwise
+        return `M ${cx} ${cy} L ${x0} ${y0} A ${r} ${r} 0 ${largeArc} ${sweep} ${x1} ${y1} Z`;
+      }
+
+      const sector = document.createElementNS(svgNS,"path");
+      sector.setAttribute("d", sectorPath(cx,cy,r,180,endDeg));
+      sector.setAttribute("fill","#000");
+      sector.setAttribute("opacity","0.18"); // gentle shading on ePaper
+      svg.appendChild(sector);
+
+      // Needle
+      const angle=endDeg*Math.PI/180;
+      const nx=cx + r*Math.cos(angle), ny=cy - r*Math.sin(angle);
       const needle=document.createElementNS(svgNS,"line");
       needle.setAttribute("x1",cx); needle.setAttribute("y1",cy);
-      needle.setAttribute("x2",x);  needle.setAttribute("y2",y);
+      needle.setAttribute("x2",nx); needle.setAttribute("y2",ny);
       needle.setAttribute("stroke","black"); needle.setAttribute("stroke-width","8"); needle.setAttribute("stroke-linecap","round");
       svg.appendChild(needle);
+
       return svg;
     }
+
     function renderAQI(state,isCached=false){
       const content=document.getElementById("aqi-content"); content.innerHTML="";
       const L=document.createElement("div"); L.id="aqi-classification";
@@ -572,7 +608,7 @@
         const alertZone=pointData.properties.forecastZone;
         const stationsUrl=pointData.properties.observationStations;
 
-        // Current conditions (hourly grid "now")
+        // Current conditions
         fetch(obsUrl).then(r=>r.json()).then(obsData=>{
           if(obsData.properties?.periods?.length>0){
             const now=obsData.properties.periods[0];
