@@ -192,14 +192,14 @@
   #river-stats {
     text-align:center;
     margin-top:12px;
-    font-size: 30px;
+    font-size: 35px;
     font-weight: bold;          /* bold Stage / Discharge lines */
   }
 
   /* ====== Forecast ====== */
   #forecast-lines {
     text-align: center;
-    font-size: 28px;
+    font-size: 32px;
     font-weight: 700;           /* bolded as requested */
     line-height: 1.4;
   }
@@ -305,7 +305,7 @@
       <div class="river-header">River Water Level & Flow</div>
 
       <div id="flood-status-row">
-        <span class="river-topline" id="flood-status">RIVER BELOW FLOOD STAGE 👍</span>
+        <span class="river-topline" id="flood-status">RIVER BELOW FLOOD STAGE</span>
         <span class="river-class-banner" id="paddle-advisory">—</span>
       </div>
 
@@ -444,7 +444,7 @@
     let nextLabel, nextTime, labelPrefix;
     if (isOpen) {
       nextTime = close;
-      labelPrefix = 'Next: Park closes at';
+      labelPrefix = 'Park closes at';
     } else {
       // find next open
       let d = new Date(now);
@@ -455,7 +455,7 @@
         const hrs = PARK_HOURS[idx];
         const nOpen = new Date(d); nOpen.setHours(parseInt(hrs.open), parseInt(hrs.open.split(':')[1]), 0, 0);
         nextTime = nOpen;
-        labelPrefix = 'Next: Park opens at';
+        labelPrefix = 'Park opens at';
         break;
       }
     }
