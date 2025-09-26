@@ -629,7 +629,7 @@
         // Alerts
         if (alertZone) {
           const zoneId = alertZone.split('/').pop();
-          const alertUrl = `https://api.weather.gov/alerts/active/zone/${zoneId}`;
+          const alertUrl = `https://api.weather.gov/alerts/active/zone/NCZ040?status=actual&message_type=alert,update&_=${Date.now()}`;
           fetch(alertUrl)
             .then(res => res.json())
             .then(alertData => {
