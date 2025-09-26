@@ -87,17 +87,17 @@
     font-weight: 800;
   }
   .header-title .coords {
-    font-size: 20px;
+    font-size: 32px;
     opacity: 0.9;
   }
 
   /* ====== Park Status ====== */
   #park-status-bar {
     width: 100%;
-    background: #000;
-    color: #fff;
+    background: #ccc;
+    color: #000;
     text-align: center;
-    font-size: 40px;
+    font-size: 80px;
     font-weight: 800;
     padding: 8px 10px;
     border-radius: 6px;
@@ -143,7 +143,7 @@
     align-content: start;
   }
   .weather-line {
-    font-size: 28px;
+    font-size: 32px;
     font-weight: normal;        /* not bolded */
     text-align: left;           /* left aligned */
   }
@@ -192,7 +192,7 @@
   #river-stats {
     text-align:center;
     margin-top:12px;
-    font-size: 35px;
+    font-size: 30px;
     font-weight: bold;          /* bold Stage / Discharge lines */
   }
 
@@ -221,8 +221,8 @@
     font-weight: 800;
   }
   #aqi-extra { margin-top: 6px; text-align: center; }
-  #aqi-guidance { font-size: 26px; color: #222; font-weight: 600; }
-  #aqi-breakdown { font-size: 22px; color: #222; }
+  #aqi-guidance { font-size: 32px; color: #222; font-weight: 600; }
+  #aqi-breakdown { font-size: 32px; color: #222; }
   #aqi-source { font-size: 18px; color: #444; }
 
   /* ====== Fit logic helpers ====== */
@@ -241,8 +241,8 @@
              onerror="this.style.display='none'">
       </div>
       <div class="header-title">
-        <div class="main">US 64 Haw River Access, 348 River Access Rd</div>
-        <div class="coords">(<span id="header-lat">35.730995</span> / <span id="header-lon">-79.107109</span>)</div>
+        <div class="main">US 15/501 Haw River Access</div>
+        <div class="coords">(<span id="header-lat">35.77659</span> / <span id="header-lon">-79.14597</span>)</div>
       </div>
       <div class="header-right" aria-hidden="true"></div>
     </div>
@@ -282,18 +282,17 @@
         </div>
         <div id="weather-right">
           <!-- left column -->
-          <div class="weather-line" id="sunrise-line">Sunrise: --</div>
-          <!-- right column -->
           <div class="weather-line" id="forecast-line">--</div>
-
-          <div class="weather-line" id="sunset-line">Sunset: --</div>
-          <div class="weather-line" id="uv-line">UV Index (Open-Meteo): --</div>
-
           <div class="weather-line" id="wind-line">Wind: --</div>
+          <div class="weather-line" id="sunset-line">Sunset: --</div>
+          <div class="weather-line" id="sunrise-line">Sunrise: --</div>
+          
+          <!-- right column -->
           <div class="weather-line" id="humidity-line">Humidity: --%</div>
-
           <div class="weather-line" id="feelslike-line">Feels like: --°F</div>
           <div class="weather-line" id="dewpoint-line">Dew point: --°F</div>
+          <div class="weather-line" id="uv-line">UV Index: --</div>
+
         </div>
       </div>
       <div id="weather-source">Source: —</div>
@@ -351,9 +350,9 @@
   <script>
   /* ===================== GLOBALS ===================== */
 
-  // Site coordinates (US 64 access). Change for the other site as needed.
-  let LAT = 35.730995;
-  let LON = -79.107109;
+  // Site coordinates (US 51/501 access). Change for the other site as needed.
+  let LAT = 35.77659;
+  let LON = -79.14597;
   document.getElementById('header-lat').textContent = LAT;
   document.getElementById('header-lon').textContent = LON;
 
@@ -368,15 +367,15 @@
   const AIRNOW_API_KEY = '26158E56-5836-46D3-B819-92969016332B';
 
   // Park hours — easy to edit per weekday (0=Sun ... 6=Sat)
-  // Default: 8:00 AM – 7:00 PM
+  // Default: 12:00 AM – 11:00 PM
   const PARK_HOURS = {
-    0: { open: "08:00", close: "19:00" },
-    1: { open: "08:00", close: "19:00" },
-    2: { open: "08:00", close: "19:00" },
-    3: { open: "08:00", close: "19:00" },
-    4: { open: "08:00", close: "19:00" },
-    5: { open: "08:00", close: "19:00" },
-    6: { open: "08:00", close: "19:00" }
+    0: { open: "12:00", close: "23:00" },
+    1: { open: "12:00", close: "23:00" },
+    2: { open: "12:00", close: "23:00" },
+    3: { open: "12:00", close: "23:00" },
+    4: { open: "12:00", close: "23:00" },
+    5: { open: "12:00", close: "23:00" },
+    6: { open: "12:00", close: "23:00" }
   };
 
   // River guidance thresholds (CFS)
@@ -431,14 +430,14 @@
 
     const bar = document.getElementById('park-status-bar');
     bar.textContent = isOpen ? 'OPEN / ABIERTO' : 'CLOSED / CERRADO';
-    bar.style.backgroundColor = '#000';
-    bar.style.color = '#fff';
+    bar.style.backgroundColor = '#ccc';
+    bar.style.color = '#000';
 
     const fmtHM = (d) => new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute:'2-digit', hour12: true, timeZone: TIME_ZONE }).format(d);
 
     // Today line
     document.getElementById('park-hours-today').textContent =
-      `Today: ${fmtHM(open)}–${fmtHM(close)}`;
+      `Today's hours: ${fmtHM(open)}–${fmtHM(close)}`;
 
     // Next: if open -> closes today; else -> opens tomorrow
     let nextLabel, nextTime, labelPrefix;
@@ -450,7 +449,7 @@
       let d = new Date(now);
       let tries = 0;
       while (tries < 8) {
-        d.setDate(d.getDate() + 1);
+        d.setDate(d.getDate());
         const idx = d.getDay();
         const hrs = PARK_HOURS[idx];
         const nOpen = new Date(d); nOpen.setHours(parseInt(hrs.open), parseInt(hrs.open.split(':')[1]), 0, 0);
@@ -536,7 +535,7 @@
             if (new Date(t[i]) <= now) { idx = i; break; }
           }
           const val = Math.round(u[idx] ?? 0);
-          document.getElementById('uv-line').textContent = `UV Index (Open-Meteo): ${val}`;
+          document.getElementById('uv-line').textContent = `UV Index: ${val}`;
         }
       })
       .catch(()=>{ document.getElementById('uv-line').textContent = 'UV Index (Open-Meteo): —'; });
