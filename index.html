@@ -112,10 +112,39 @@
   }
 
   /* ====== Alerts ====== */
-  #alert-message {
-    font-weight: bold;
-    white-space: pre-wrap;
-    text-align: center;  /* keep centered */
+    const pointAlertsUrl =
+    `https://api.weather.gov/alerts/active?point=${LAT},${LON}` +
+    `&status=actual&message_type=alert,update&_=${Date.now()}`;
+                                                  
+fetch(pointAlertsUrl)
+  .then(res => res.json())
+  .then(alertData => {
+    let features = alertData?.features || [];
+    if (!features.length) {
+      // Fallback: include BOTH forecast + county zones
+      const fz = pointData.properties?.forecastZone?.split('/').pop();
+      const cz = pointData.properties?.county?.split('/').pop();
+      const zones = [fz, cz].filter(Boolean).join(',');
+      if (zones) {
+        const zoneAlertsUrl =
+          `https://api.weather.gov/alerts/active?zone=${zones}&status=actual&message_type=alert,update&_=${Date.now()}`;
+        return fetch(zoneAlertsUrl).then(r => r.json());
+      }
+    }
+    return alertData;
+  })
+  .then(data => {
+    const feats = data?.features || [];
+    const msg = feats.length
+      ? feats.map(a => a.properties?.headline || a.properties?.event || 'Alert').join('\n')
+      : 'No alerts at this time / Sin alertas en este momento';
+    document.getElementById('alert-message').textContent = msg;
+  })
+  .catch(() => {
+    document.getElementById('alert-message').textContent =
+      'No alerts at this time / Sin alertas en este momento';
+  });
+  
   }
 
   /* ====== Weather ====== */
