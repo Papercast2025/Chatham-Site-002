@@ -626,11 +626,20 @@
           document.getElementById('rainfall-forecast-2').textContent = a[1] || '—';
         }).catch(()=>{});
 
-  /* ====== Alerts ====== */
-  #alert-message {
-    font-weight: bold;
-    white-space: pre-wrap;
-    text-align: center;  /* keep centered */
+   // Alerts
+        if (alertZone) {
+          const zoneId = alertZone.split('/').pop();
+          const alertUrl = `https://api.weather.gov/alerts/active/zone/${zoneId}`;
+          fetch(alertUrl)
+            .then(res => res.json())
+            .then(alertData => {
+              const msg = (alertData.features && alertData.features.length)
+                ? alertData.features.map(a => a.properties.headline).join('\n')
+                : 'No alerts at this time / Sin alertas en este momento';
+              document.getElementById('alert-message').textContent = msg;
+            }).catch(()=>{});
+        }
+      }).catch(()=>{});
   }
 
   /* ===================== AQI ===================== */
