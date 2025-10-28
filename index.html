@@ -546,8 +546,8 @@ function classifyFlow(cfs, stage, flood){
   if(Number.isFinite(stage) && Number.isFinite(flood) && stage>=flood)
     return 'UNSAFE RIVER FLOW - ACCESS CLOSED, STAY OFF THE RIVER!';
   if(!Number.isFinite(cfs)) return '—';
-  if(cfs<600) return 'TOO LOW TO PADDLE';
-  if(cfs<=1200) return 'LOW FLOW';
+  if(cfs<400) return 'TOO LOW TO PADDLE';
+  if(cfs<=1000) return 'LOW FLOW';
   if(cfs<=3000) return 'MEDIUM FLOW - RAPIDS POSE SIGNIFICANT RISK - PADDLERS SHOULD BE AWARE OF CLASS RATINGS';
   if(cfs>=10000) return 'HIGH FLOW - EXPERT SKILL LEVEL ONLY';
   return 'HIGH FLOW - EXPERT SKILL LEVEL ONLY';
