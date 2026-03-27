@@ -427,12 +427,12 @@
     return H * 60 + M;
   }
 
-  // Build a Date for display formatting (fmtTime uses timeZone so this is safe enough)
-  function hhmmToDisplayDate(hhmm) {
-    const tz = tzNow();
+  // Format "HH:MM" (24h) to "H:MM AM/PM" display string — no Date object needed
+  function fmtHH(hhmm) {
     const [H, M] = hhmm.split(':').map(n => parseInt(n, 10));
-    const iso = `${tz.year}-${String(tz.month).padStart(2,'0')}-${String(tz.day).padStart(2,'0')}T${String(H).padStart(2,'0')}:${String(M).padStart(2,'0')}:00`;
-    return new Date(iso);
+    const ampm = H >= 12 ? 'PM' : 'AM';
+    const h12 = H % 12 || 12;
+    return `${h12}:${String(M).padStart(2, '0')} ${ampm}`;
   }
 
   function diffMinutes(laterMin, earlierMin) {
@@ -457,27 +457,22 @@
     bar.style.backgroundColor = '#ccc';
     bar.style.color = '#000';
 
-    const fmtHM = (d) => new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute:'2-digit', hour12: true, timeZone: TIME_ZONE }).format(d);
-    const openDisp = hhmmToDisplayDate(today.open);
-    const closeDisp = hhmmToDisplayDate(today.close);
-
-    // Today line
+    // Today line — format directly from hh:mm, no Date object (avoids TZ conversion bugs)
     document.getElementById('park-hours-today').textContent =
-      `Today's hours: ${fmtHM(openDisp)}–${fmtHM(closeDisp)}`;
+      `Today's hours: ${fmtHH(today.open)}–${fmtHH(today.close)}`;
 
     // Next: if open -> closes at; else -> opens at
     let nextLabel;
     if (isOpen) {
-      nextLabel = `Park closes at ${fmtHM(closeDisp)} (in ${diffMinutes(closeMin, tz.totalMinutes)})`;
+      nextLabel = `Park closes at ${fmtHH(today.close)} (in ${diffMinutes(closeMin, tz.totalMinutes)})`;
     } else if (tz.totalMinutes < openMin) {
       // Before opening today
-      nextLabel = `Park opens at ${fmtHM(openDisp)} (in ${diffMinutes(openMin, tz.totalMinutes)})`;
+      nextLabel = `Park opens at ${fmtHH(today.open)} (in ${diffMinutes(openMin, tz.totalMinutes)})`;
     } else {
       // After closing today — opens tomorrow
       const tmrDow = (tz.dow + 1) % 7;
       const tmrHrs = PARK_HOURS[tmrDow];
-      const tmrDisp = hhmmToDisplayDate(tmrHrs.open);
-      nextLabel = `Park opens tomorrow at ${fmtHM(tmrDisp)}`;
+      nextLabel = `Park opens tomorrow at ${fmtHH(tmrHrs.open)}`;
     }
     document.getElementById('park-hours-next').textContent = nextLabel;
   }
